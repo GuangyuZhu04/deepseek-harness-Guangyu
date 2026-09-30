@@ -236,6 +236,18 @@ describe('CI workflow', () => {
 })
 
 describe('DeepSeek e2e workflow', () => {
+  it('downloads bubblewrap from a dated Ubuntu snapshot and verifies it before extraction', () => {
+    const script = readFileSync(resolve(root, 'scripts/prepare-ci-bubblewrap.sh'), 'utf8')
+
+    expect(script).toMatch(/readonly UBUNTU_SNAPSHOT='\d{8}T\d{6}Z'/)
+    expect(script).toContain('https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT}/pool/main/b/bubblewrap/')
+    expect(script).not.toContain('https://archive.ubuntu.com/')
+    const verification = script.indexOf('sha256sum --check --status')
+    expect(verification).toBeGreaterThan(-1)
+    expect(script.indexOf('dpkg-deb --extract')).toBeGreaterThan(verification)
+    expect(script).toContain('set -euo pipefail')
+  })
+
   it('prepares bubblewrap from the pinned payload without a package transaction', () => {
     const workflow = loadWorkflow('.github/workflows/e2e.yml')
     const e2e = workflowJob(workflow, 'e2e')
