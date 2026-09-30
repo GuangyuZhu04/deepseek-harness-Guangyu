@@ -236,11 +236,12 @@ describe('CI workflow', () => {
 })
 
 describe('DeepSeek e2e workflow', () => {
-  it('downloads bubblewrap from a dated Ubuntu snapshot and verifies it before extraction', () => {
+  it('downloads the pinned bubblewrap security release from a recorded build and verifies it before extraction', () => {
     const script = readFileSync(resolve(root, 'scripts/prepare-ci-bubblewrap.sh'), 'utf8')
 
-    expect(script).toMatch(/readonly UBUNTU_SNAPSHOT='\d{8}T\d{6}Z'/)
-    expect(script).toContain('https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT}/pool/main/b/bubblewrap/')
+    expect(script).toContain("readonly BUBBLEWRAP_VERSION='0.12.0-1'")
+    expect(script).toContain('https://launchpad.net/ubuntu/+source/bubblewrap/${BUBBLEWRAP_VERSION}/+build/33546835/+files/')
+    expect(script).toMatch(/readonly BUBBLEWRAP_SHA256='[a-f0-9]{64}'/)
     expect(script).not.toContain('https://archive.ubuntu.com/')
     const verification = script.indexOf('sha256sum --check --status')
     expect(verification).toBeGreaterThan(-1)
